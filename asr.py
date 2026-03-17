@@ -121,6 +121,7 @@ if __name__ == "__main__":
     config.read(config_file_path)
 
     google_speech_dataset_path = pathlib.Path(config.get("dataset", "dataset_path"))
+
     validation_percentage      = config.getfloat("dataset", "valid_size")
     testing_percentage         = config.getfloat("dataset", "test_size")
 
@@ -129,14 +130,16 @@ if __name__ == "__main__":
     dropout_rate = config.getfloat("model", "dropout")
 
     num_epochs   = config.getint("training", "num_epochs")
+    classes      = config.get("training", "classes")
+    classes      = [cls.lstrip() for cls in classes.split(",")]
 
     background_noise_dir = google_speech_dataset_path / "_background_noise_"
     noise_list = [noise for noise in os.listdir(background_noise_dir) if not noise.endswith('.md')]
 
     # every folder is a class of command that contains 1 second *.wav files
-    classes = os.listdir(google_speech_dataset_path)
-    classes = [cls for cls in classes if os.path.isdir(google_speech_dataset_path / cls)
-          and not cls.startswith("_")]
+    #classes = os.listdir(google_speech_dataset_path)
+    #classes = [cls for cls in classes if os.path.isdir(google_speech_dataset_path / cls)
+    #      and not cls.startswith("_")]
     
     # gather all the data into a single array
     data = []
@@ -198,7 +201,7 @@ if __name__ == "__main__":
     outputs = layers.Dense(len(classes), activation="softmax")(x)
 
     model = keras.Model(inputs=inputs, outputs=outputs)
-    #model.summary()
+
     model.compile(optimizer=keras.optimizers.AdamW(learning_rate=5e-5),
                 loss="sparse_categorical_crossentropy",
                 metrics=["accuracy"])
